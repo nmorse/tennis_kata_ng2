@@ -1,0 +1,205 @@
+
+<div class="modal-header">
+    <button type="button" class="close" ng-click="closeDocUpload()" aria-hidden="true">&times;</button>
+    <h2>Upload and Submit Documents</h2>
+</div>
+<br />
+<div class="modal-body">
+    <!-- end modal shell -->
+    <div ng-if="getDisplayStateFor('initializing')" class="well">
+        <h4 class="api_loading">Loading... <i class="fa fa-cog fa-spin"></i></h4>
+    </div>
+    <div ng-if="!getDisplayStateFor('initializing') && getDisplayStateFor('availability_error')" class="alert alert-warning">
+        <p><span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> 
+            Error: The document upload service is currently unavailable. Try again later.
+        </p>
+        <br />
+        <p>Please contact customer support, if this problem persists.</p>
+    </div>
+    <div ng-if="!getDisplayStateFor('initializing') && !getDisplayStateFor('availability_error')" class="documents_upload_interface">
+        <!-- begin upload docs -->
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-12" ng-if="getDisplayStateFor('submitted')">
+                    <div class="alert alert-success">
+                        Your documents have been received.
+                    </div>
+                    <div class="well">
+                        <p>
+                            Please allow 72 hours for processing. You may submit files no more than once every 24 hours.
+                        </p>
+                        <br/>
+                        <p>
+                            If you have erroneously omitted documents, you may contact us at (800) 999-8674, or fax the omitted documents to (516) 560-5263.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-sm-12" ng-if="getDisplayStateFor('lock_out')">
+                    <div class="alert alert-warning wide-alert">
+                        Documents have been submitted for this case within the last 24 hours.
+                    </div>
+                    <div class="well">
+                        <p>
+                            If you have erroneously omitted documents, you may contact us at (800) 999-8674, or fax the omitted documents to (516) 560-5263.
+                        </p>
+                    </div>
+                </div>
+                <div ng-cloak class="col-sm-12"
+                     ng-show="!getDisplayStateFor('submitted') && !getDisplayStateFor('lock_out') && !getDisplayStateFor('final_loading')">
+
+                    <table class="results">
+                        <thead>
+                            <tr>
+                                <th>Documents for Case Id: {{caseId}}</th>
+                                <th style="width:120px;">Status</th>
+                                <th style="width:80px;">Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- ng-if="files && files.length > 0" -->
+                            <tr>
+                                <td colspan="3">
+                                    <div style="text-align: left; white-space: normal;">
+                                        <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> Only .JPG or .PDF file formats are accepted.<br />
+                                        You may add multipile files below.<br />
+                                        Once all files have been added and listed as "ready to submit", you must click submit.<br />
+                                        Please note that after submission, a 24 hour waiting period is imposed before further documentation may be submitted.
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr ng-if="getDisplayStateFor('loading_gear_icon')">
+                                <td><span ng_if="getDisplayStateFor('loading_gear_icon')"> <i class="fa fa-cog fa-spin"></i></span></td>
+                                <td style="width:120px;">Loading...</td>
+                                <td style="width:80px;"></td>
+                            </tr>
+                            <tr ng-if="!getDisplayStateFor('loading_gear_icon')" ng-repeat="file in files track by $index">
+                                <td style="text-align: left; padding-left: 7px;">
+                                    File: {{file.user_file_name}}
+                                </td>
+                                <td style="width:120px;">
+                                    <span ng-if="$index != removeIndex" class="label label-success">Ready to Submit</span>
+                                    <span ng-if="$index == removeIndex" class="label label-warning">Removing File</span>
+                                </td>
+                                <td style="width:80px;">
+                                    <a ng-click="removeDoc($index);" ng-if="getDisplayStateFor('adding')">
+                                        <i class="fa fa-minus-circle" style="font-size: 15px;"></i>
+                                    </a>
+                                    <a ng-if="!getDisplayStateFor('adding')">
+                                        <i class="fa fa-minus-circle" style="font-size: 15px; color: #a4b7de"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td ng-show="!getDisplayStateFor('confirm_submit') && !getDisplayStateFor('submitting') && !getDisplayStateFor('submit_error')" colspan="3">
+
+                                    <form name="form">
+                                        <div class="row">
+                                            <div class="col-sm-2">
+                                                <div ngf-select ng-model="file" ngf-model-invalid="invalidFiles"
+                                                     name="file" accept=".jpg, .pdf" ngf-max-size="4096KB" required
+                                                     class="btn" ngf-drop-available="dropAvailable" ng-change="uploadDoc(file)"
+                                                     style="margin: 12px 10px; min-width: 100px;">
+                                                    Add a File
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <!-- leave the form elements on screen -->
+                                                <div ng-if="dropAvailable"
+                                                     ngf-drop ng-model="file" ngf-model-invalid="invalidFiles"
+                                                     name="file" accept=".jpg, .pdf" ngf-max-size="4096KB" required
+                                                     class="drop-box" ngf-drop-available="dropAvailable" ng-change="uploadDoc(file)">
+                                                    <br /> or Drag &amp; Drop a File Here
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <div class="uploadProgress" ng-show="file.progress >= 0 && getDisplayStateFor('uploading')">
+                                                    <div style="width:{{file.progress}}%" ng-bind="file.progress + '%'"></div>
+                                                </div>
+                                                <div class="alert alert-warning"
+                                                     ng-show="getDisplayStateFor('uploading')"
+                                                     style="margin: 5px;">
+                                                    Uploading and processing...
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div ng-if="!getDisplayStateFor('confirm_submit')" class="row">
+                <div class="col-sm-12">
+                    <div ng-if="getDisplayStateFor('submitting')" class="alert alert-warning"
+                         style="padding: 19px; margin: 19px 5px 5px 0;">
+                        <span><i class="fa fa-cog fa-spin"></i></span> Submitting, please wait.<br />
+                        Depending on the number and size of the selected documents,
+                        this process may take up to several minutes to complete.
+                    </div>
+                    <div ng-if="!getDisplayStateFor('submitting') && getDisplayStateFor('WebMsg')"
+                         class="alert alert-danger fade-out alert-dismissible wide-alert"
+                         style="margin-top: 15px; margin-bottom: 5px;"
+                         role="alert">
+                        <button ng-click="retry()" type="button" class="close" data-dismiss="alert" aria-label="Reset"
+                                style="top: -27px; right: -20px; width: 30px; height: 30px; margin-left:12px; opacity: 0.6; font-size: 1.2em;">
+                            <!--<span aria-hidden="true">&times;</span>-->
+                            Ok
+                        </button>
+                        <div style="margin-right: 8px;">
+                            Error: {{getDisplayStateFor('WebMsg')}}
+                        </div>
+                    </div>
+                    <button ng-if="isFinalState()" class="btn alt" ng-click="closeDocUpload()" style="margin: 0px auto; float: none">Close</button>
+                </div>
+            </div>
+            <div ng-if="!getDisplayStateFor('confirm_submit')" style="width: 100%; padding-top: 0; margin-left: 0px;">
+                <button class="btn" style="float: left;"
+                        ng-if="!getDisplayStateFor('submitted') && !getDisplayStateFor('lock_out') && !getDisplayStateFor('loading_gear_icon')"
+                        ng-disabled="!getDisplayStateFor('adding') || files.length <= 0" ng-click="submitDocs()">
+                    Submit
+                </button>
+                <a ng-if="!isFinalState()" class="btn alt" ng-click="closeDocUpload()" style="float: left; margin-left: 10px;">Cancel</a>
+            </div>
+
+            <div ng-if="getDisplayStateFor('confirm_submit')">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="alert alert-warning wide-alert">
+                            <div class="row">
+                                <div class="col-sm-1">
+                                    <p>
+                                        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                                        <span class="sr-only">Alert:</span>
+                                    </p>
+                                </div>
+                                <div class="col-sm-11">
+                                    <p>
+                                        Please confirm that you intend to submit the document(s) above.
+                                    </p>
+                                    <p>
+                                        Once submitted please allow many hours for processing.<br />
+                                        Documentation may not be submitted more than once every 24 hours.
+                                    </p>
+                                
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="btn_frame row" style="width: 100%; padding-top: 0; margin-left: 0px;">
+                                        <button class="btn" ng-click="submissionConfirmed()" style="float: left;">
+                                            Submit
+                                        </button>
+                                        <a class="btn alt" ng-click="submissionCanceled()" style="float: left; margin-left: 10px;">Cancel</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- end upload docs -->
+
+    </div>
+</div>
