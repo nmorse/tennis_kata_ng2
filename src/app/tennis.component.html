@@ -1,5 +1,5 @@
 <h1>
   {{state.getCurrentStateName()}}
 </h1>
-<button (click)="point('1')">Point Player 1</button>
-<button (click)="point('2')">Point Player 2</button>
+<button (click)="point('1')">Point Player 1</button> {{sayScore(p1)}}
+<button (click)="point('2')">Point Player 2</button> {{sayScore(p2)}}
