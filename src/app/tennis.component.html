@@ -16,12 +16,12 @@
 </div>
 <div class="grid">
   <div class="col-1-3 content">
-    <button (click)="point('1')"> Point Player 1 </button>
+    <button (click)="point('1')" [disabled]="!state.hasTransition('2')"> Point Player 1 </button>
   </div>
   <div class="col-1-3 content">
     <button (click)="reset()" [disabled]="!state.isFinalState()"> Reset </button>
   </div>
   <div class="col-1-3 content">
-    <button (click)="point('2')"> Point Player 2 </button>
+    <button (click)="point('2')" [disabled]="!state.hasTransition('2')"> Point Player 2 </button>
   </div>
 </div>
