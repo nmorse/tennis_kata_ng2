@@ -56,6 +56,10 @@ export class FSM {
     }
   }
 
+  currently(some_state_name: string) {
+    return (this.current_state === some_state_name);
+  }
+
   getCurrentStateName() {
     return this.current_state;
   }
