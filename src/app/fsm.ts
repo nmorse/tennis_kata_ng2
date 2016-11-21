@@ -25,30 +25,29 @@ export class FSM {
 
   // signal the state machine with an environment that a guard can evaluate within.
   signal(requested_transition: string, env = null) {
-    let next_state = '';
-    let default_state = '';
+    let guarded_next_state = '';
+    let default_next_state = '';
     let possible_trans = this.fsa['trans'][this.current_state];
     if (possible_trans[requested_transition]) {
       let pt = possible_trans[requested_transition];
       for (let tn in pt) {
         if (typeof pt[tn] === 'boolean' && pt[tn] === true) {
-          //alert('signal '+ requested_transition + ' to default_state ' + tn );
-          default_state = tn;
+          default_next_state = tn;
         }
         else {
           if (pt[tn].call(env)) {
-            next_state = tn;
+            guarded_next_state = tn;
           }
         }
       }
-      if (!next_state && default_state) {
-        if (this.logging) { console.log('going to defualt_state: ' + default_state ); }
-        this.current_state = default_state;
+      if (!guarded_next_state && default_next_state) {
+        if (this.logging) { console.log('on signal:'+requested_transition+', transitioning to state:' + default_next_state + ' (unguarded)'); }
+        this.current_state = default_next_state;
         return this.current_state;
       }
-      else if (next_state) {
-        if (this.logging) { console.log('going to next_state: ' + next_state ); }
-        this.current_state = next_state;
+      else if (guarded_next_state) {
+        if (this.logging) { console.log('on signal:'+requested_transition+', transitioning to state:' + guarded_next_state + ' (guarded)'); }
+        this.current_state = guarded_next_state;
         return this.current_state;
       }
       if (this.logging) { console.log('no transition taken for signal: ' + requested_transition ); }
@@ -56,6 +55,7 @@ export class FSM {
     }
   }
 
+  // reports if the current state is equal to some given state.
   currently(some_state_name: string) {
     return (this.current_state === some_state_name);
   }
@@ -77,11 +77,12 @@ export class FSM {
     return this.isEmptyObject(possible_trans);
   }
 
-  isEmptyObject(obj) {
+  private isEmptyObject(obj) {
     return (Object.keys(obj).length === 0);
   }
 
-  // determin if the current state has a certain transition out, based on the given signal.
+  // determine if the current state has a certain transition out,
+  // based on the given signal.
   hasTransition(signal: string): boolean {
     let possible_trans = this.fsa['trans'][this.current_state];
     if (possible_trans[signal]) {
